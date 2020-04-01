@@ -79,3 +79,26 @@ val letter: Parser<Char> = { input ->
     else
         listOf()
 }
+
+/**
+ * A some parser is a function receiving another parser as well as a
+ * String to be parsed.
+ * The some parser will actually run the provided parser on the input
+ * String as long as it matches, and provide the result of the n parsings
+ * which have been done.
+ * The some parser won't parse anything if the provided parser doesn't
+ * produce any result at all.
+ */
+fun <T> some(parser: Parser<T>): Parser<List<T>> = { input ->
+    fun acc(parsedItems: List<T>, unparsed: String): List<ParsingResult<List<T>>> =
+        parser(unparsed).let { results ->
+            if (results.isEmpty()) {
+                if (parsedItems.isNotEmpty()) listOf(ParsingResult(parsedItems, unparsed))
+                else listOf()
+            } else results.flatMap { (parsed, unparsed) ->
+                acc(parsedItems + parsed, unparsed)
+            }
+        }
+
+    acc(listOf(), input)
+}

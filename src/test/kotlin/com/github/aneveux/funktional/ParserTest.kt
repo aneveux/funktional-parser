@@ -1,5 +1,6 @@
 package com.github.aneveux.funktional
 
+import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.numerics.shouldBeExactly
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.StringSpec
@@ -78,6 +79,25 @@ class ParserTest : StringSpec() {
         "A letter parser shouldn't parse a String with a letter not in the first position" {
             val results = letter("1abc")
             results.size shouldBeExactly 0
+        }
+
+        "A some parser shouldn't run the provided parser if it doesn't match the input" {
+            val results = some(digit)("abc")
+            results.size shouldBeExactly 0
+        }
+
+        "A some parser should run the provided parser until it stops matching the input" {
+            val results = some(digit)("123456a")
+            results.size shouldBeExactly 1
+            results.first().parsed shouldContainExactly listOf(1, 2, 3, 4, 5, 6)
+            results.first().unparsed shouldBe "a"
+        }
+
+        "A some parser should run any provided parser on the input" {
+            val results = some(letter)("abc123")
+            results.size shouldBeExactly 1
+            results.first().parsed shouldContainExactly listOf('a', 'b', 'c')
+            results.first().unparsed shouldBe "123"
         }
 
     }

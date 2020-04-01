@@ -48,3 +48,19 @@ val digit: Parser<Int> = { input ->
     else
         listOf()
 }
+
+/**
+ * A char parser is a function receiving a String to be parsed, and a
+ * list of chars to be matched from the parsing.
+ * The function should return the result of the parsing:
+ * If the providing String starts with one of the provided char, this char should
+ * be parsed, and the remaining part of the String should be left unparsed.
+ * If the provided String doesn't start with one of the provided char, the function
+ * shouldn't return a result cause the String cannot be parsed.
+ */
+fun char(vararg characters: Char): Parser<Char> = { input ->
+    if (input.isNotEmpty() && characters.contains(input.first()))
+        listOf(ParsingResult(input.first(), input.drop(1)))
+    else
+        listOf()
+}

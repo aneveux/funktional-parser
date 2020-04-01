@@ -128,5 +128,11 @@ class ParserTest : StringSpec() {
             }
         }
 
+        "An or parser should provide an alternate syntax for writing comprehensive choices" {
+            val results = (letter or digit)("123")
+            results.size shouldBeExactly 1
+            results.first().parsed shouldBe 1
+            results.first().unparsed shouldBe "23"
+        }
     }
 }

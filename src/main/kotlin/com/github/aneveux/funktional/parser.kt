@@ -120,6 +120,10 @@ fun <T> some(parser: Parser<T>): Parser<List<T>> = { input ->
  * is `out T` so the returned type of the or parser will be a type matching with both
  * types provided by the parsers to be tested.
  */
+@JvmName("orGate")
 fun <T> or(firstParser: Parser<T>, secondParser: Parser<T>): Parser<T> = { input ->
     firstParser(input).takeIf { it.isNotEmpty() } ?: secondParser(input)
 }
+
+//Using Kotlin syntaxic sugar to have a better way of writing or parsers
+infix fun <T> Parser<T>.or(secondParser: Parser<T>):Parser<T> = or(this,secondParser)

@@ -134,5 +134,13 @@ class ParserTest : StringSpec() {
             results.first().parsed shouldBe 1
             results.first().unparsed shouldBe "23"
         }
+
+        "A natural parser should allow to parse natural numbers and return them as actual numbers instead of list of digits" {
+            val results = natural("1234abc")
+            results.size shouldBeExactly 1
+            // Please note that the type of the parsed results is an actual number this time
+            results.first().parsed shouldBe 1234
+            results.first().unparsed shouldBe "abc"
+        }
     }
 }

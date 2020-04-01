@@ -126,4 +126,36 @@ fun <T> or(firstParser: Parser<T>, secondParser: Parser<T>): Parser<T> = { input
 }
 
 //Using Kotlin syntaxic sugar to have a better way of writing or parsers
-infix fun <T> Parser<T>.or(secondParser: Parser<T>):Parser<T> = or(this,secondParser)
+infix fun <T> Parser<T>.or(secondParser: Parser<T>): Parser<T> = or(this, secondParser)
+
+// -------------------------------
+
+/*
+    At this point in the development, we'll need a bit more than the functions we
+    already defined. We need to be able to define parsers with some actual behavior
+    added to them. That behavior cannot be completely generic, and we need to
+    be able to complete our parsers with a way to interpret the results.
+
+    This can be done simply by providing to a parser a simple function allowing to
+    interpret its results.
+ */
+
+/**
+ * This [map] function allows (exactly as the traditional map function) to apply a
+ * provided function to the result of a parser.
+ * The small things to take into account here are that a parser returns a list of results,
+ * so the provided function needs to be executed on each result.
+ * Also, the function only transforms the parsed results, and not the unparsed parts.
+ */
+infix fun <T, U> Parser<T>.map(function: (T) -> U): Parser<U> = { input ->
+    this(input).map { (parsed, unparsed) -> ParsingResult(function(parsed), unparsed) }
+}
+
+/**
+ * A natural parser is a function taking a String as an input, and parsing it searching
+ * for a natural number. The main difference with searching for `some(digits)` is that
+ * this time we actually want to return a number, and not a list of digits.
+ * This requires us to use existing parsers to find the digits of the natural number we
+ * are searching for, and then to interpret the result to convert it to an actual number.
+ */
+val natural: Parser<Int> = some(digit).map { digits -> digits.joinToString(separator = "").toInt() }

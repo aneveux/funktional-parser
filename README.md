@@ -26,15 +26,17 @@
 
 This small project is an idea from @jmdesprez: implementing in Kotlin a functional parser as presented in [that Youtube video](https://youtu.be/dDtZLm7HIJs).
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/dDtZLm7HIJs" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
 In the video, the presented parser is implemented in Haskell. Our goal with Jean-Marc was to implement a similar kind of parser in Kotlin.
+
+The aim of the parser we're developing is actually fairly simple: it should allow to parse expressions such as `(1+3*(2+4)*2+4-(2*4))` and be able to calculate the actual result. The parser computation should also validate the expression by parsing only things which are allowed.
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
 
 If you'd like to discover what we did or play a bit with the source code as well, you can have a look at our test file located in `src/test/kotlin` to understand how we built our parser.
 
 The actual implementation is located in `src/main/kotlin`.
+
+Do not hesitate to have a look at each commit to understand the evolution of the parser. Each brick has been added in a dedicated commit.
 
 ### Prerequisites
 

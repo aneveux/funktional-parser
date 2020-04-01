@@ -142,5 +142,52 @@ class ParserTest : StringSpec() {
             results.first().parsed shouldBe 1234
             results.first().unparsed shouldBe "abc"
         }
+
+        "A then function should allow to run two parsers consecutively" {
+            val results = (letter then digit)("a1b2c3")
+            results.size shouldBeExactly 1
+            results.first().parsed shouldContainExactly listOf('a', 1)
+            results.first().unparsed shouldBe "b2c3"
+        }
+
+        "Parsers should allow composition using a + symbol to allow alternate writting of the then function" {
+            val results = (digit + letter)("1a2b3c")
+            results.size shouldBeExactly 1
+            results.first().parsed shouldContainExactly listOf(1, 'a')
+            results.first().unparsed shouldBe "2b3c"
+        }
+
+        "The + and then function should allow the composition of multiple parsers and flatten their results" {
+            val results = (digit + letter + digit)("1a2b3c")
+            results.size shouldBeExactly 1
+            results.first().parsed shouldContainExactly listOf(1, 'a', 2)
+            results.first().unparsed shouldBe "b3c"
+        }
+
+        "An integer parser should allow to parse integer numbers and return them as actual numbers" {
+            val results = integer("1234")
+            results.size shouldBeExactly 1
+            results.first().parsed shouldBeExactly 1234
+            results.first().unparsed shouldBe ""
+        }
+
+        "An integer parser should allow to parse negative integer numbers, written with their minus sign" {
+            val results = integer("-1234")
+            results.size shouldBeExactly 1
+            results.first().parsed shouldBeExactly -1234
+            results.first().unparsed shouldBe ""
+        }
+
+        "An integer parser should allow to parse positive integer numbers, written with their plus sign" {
+            val results = integer("+1234")
+            results.size shouldBeExactly 1
+            results.first().parsed shouldBeExactly 1234
+            results.first().unparsed shouldBe ""
+        }
+
+        "An integer parser shouldn't parse numbers written with unknown signs" {
+            val results = integer("!1234")
+            results.size shouldBeExactly 0
+        }
     }
 }

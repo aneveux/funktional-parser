@@ -146,6 +146,10 @@ infix fun <T> Parser<T>.or(secondParser: Parser<T>): Parser<T> = or(this, second
  * The small things to take into account here are that a parser returns a list of results,
  * so the provided function needs to be executed on each result.
  * Also, the function only transforms the parsed results, and not the unparsed parts.
+ *
+ * We'll directly use some Kotlin sugar syntax to have the map function as an infix
+ * extension of a Parser object, so we can call it this way: `parser map function`
+ * instead of `map(parser,function)`.
  */
 infix fun <T, U> Parser<T>.map(function: (T) -> U): Parser<U> = { input ->
     this(input).map { (parsed, unparsed) -> ParsingResult(function(parsed), unparsed) }
@@ -159,3 +163,70 @@ infix fun <T, U> Parser<T>.map(function: (T) -> U): Parser<U> = { input ->
  * are searching for, and then to interpret the result to convert it to an actual number.
  */
 val natural: Parser<Int> = some(digit).map { digits -> digits.joinToString(separator = "").toInt() }
+
+// -------------------------------
+
+/*
+    This time, in addition with the functions we already have, we need a way
+    to compose or aggregate parsers, so we can define high order parsers
+    composed of lower level ones. For example, saying that a `hello` parser
+    is the composition of `h,e,l,l,o` parsers for example.
+
+    To do so, we simply need a function taking 2 parsers as parameters, and
+    running them one after the other.
+
+    Obviously, we could imagine lots of syntaxic sugar allowing to define
+    suites of parsers to be executed, but as per now we'll limit ourselves to a
+    simple composition of parsers.
+ */
+
+/**
+ * This [then] function allows to run two parsers one after the other.
+ * The trick here is to run the first parser, then to run the second parser on the
+ * part which has not been parsed by the first parser, and then aggregating all the results
+ * in a single object so we can return a proper result.
+ */
+infix fun <T> Parser<T>.then(secondParser: Parser<T>): Parser<List<T>> = { input ->
+    this(input).flatMap { (first, intermediate) ->
+        secondParser(intermediate).map { (second, unparsed) ->
+            ParsingResult(listOf(first, second), unparsed)
+        }
+    }
+}
+
+// Using Kotlin sugar syntax to allow using the + symbol instead of calling then function
+infix operator fun <T> Parser<T>.plus(secondParser: Parser<T>): Parser<List<T>> = this then secondParser
+
+/**
+ * This alternate [then] function allows to run multiple parsers one after the other by actually
+ * flattening their results in the same result list instead of generating nested lists for each parser.
+ * It works exactly the same way as the previous one, it'll just flatten the results.
+ */
+@JvmName("thenList")
+infix fun <T> Parser<List<T>>.then(secondParser: Parser<T>): Parser<List<T>> = { input ->
+    this(input).flatMap { (first, intermediate) ->
+        secondParser(intermediate).map { (second, unparsed) ->
+            ParsingResult(first + second, unparsed)
+        }
+    }
+}
+
+// Using Kotlin sugar syntax to allow using the + symbol instead of calling then function above
+@JvmName("plusList")
+infix operator fun <T> Parser<List<T>>.plus(secondParser: Parser<T>): Parser<List<T>> = this then secondParser
+
+/**
+ * An integer parser is a function taking a String as an input, and returning
+ * an actual integer number if the parser matches the input.
+ * The difference with the [natural] parser is that [integer] parser takes care of
+ * the potential symbol we could find (+ or - or nothing).
+ */
+@Suppress("CAST_NEVER_SUCCEEDS") // Because we know our casts will actually succeed.
+val integer: Parser<Int> = char('+', '-') + natural map { (sign, number) ->
+    when (sign as Char) {
+        '-' -> -(number as Int)
+        // The else branch can only be the '+' character
+        // Because our parser can't match anything else
+        else -> (number as Int)
+    }
+} or natural

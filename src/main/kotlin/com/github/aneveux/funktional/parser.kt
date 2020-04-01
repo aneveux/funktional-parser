@@ -230,3 +230,81 @@ val integer: Parser<Int> = char('+', '-') + natural map { (sign, number) ->
         else -> (number as Int)
     }
 } or natural
+
+// -------------------------------
+
+/*
+    Now comes the real deal: we're almost able to start parsing
+    expressions and basic calculation expressions!
+    What we need is to add some parsers allowing to express
+    expressions.
+    Basically (and following the description from the Youtube video),
+    here are the elements we need:
+
+    - expression = term + expression | term
+    - term = factor * term | factor
+    - factor = (expression) | integer
+
+    The only trick we'll need right now, is some Kotlin trickery because
+    we cannot define functions or lambdas introducing this particular dependency
+    cycle between each others.
+
+    We'll need to use Kotlin objects for that.
+    We can do it, and in the same time define our actual components: expression,
+    term and factor.
+ */
+
+/**
+ * This [CyclicParser] is our Kotlin trick to allow defining parsers
+ * which rely on each others.
+ */
+abstract class CyclicParser<T> : Parser<T> {
+    protected abstract val parser: Parser<T>
+    override fun invoke(input: String) = parser(input)
+}
+
+/**
+ * An [expression] parser is a function taking a String as an input,
+ * and actually computing calculations (+ or -) against its terms or
+ * expressions.
+ * Having a cycle with terms and expressions allow to maintain the correct
+ * order between operations.
+ */
+@Suppress("CAST_NEVER_SUCCEEDS", "ClassName") // Because we know our casts will actually succeed.
+object expression : CyclicParser<Int>() {
+    override val parser: Parser<Int> = (term + char('+', '-') + expression) map { (term, operator, expression) ->
+        when (operator) {
+            '-' -> term as Int - expression as Int
+            // The else branch can only be the '+' operator
+            // because that's the only character our parser
+            // will let pass
+            else -> term as Int + expression as Int
+        }
+    } or term
+}
+
+/**
+ * A [term] parser is a function taking a String as an input,
+ * and actually computing multiplications (*) against its terms.
+ * Having a cycle with terms and expressions allow to maintain the correct
+ * order between operations.
+ */
+@Suppress("CAST_NEVER_SUCCEEDS", "ClassName") // Because we know our casts will actually succeed.
+object term : CyclicParser<Int>() {
+    override val parser: Parser<Int> = (factor + char('*') + term) map { (factor, _, term) ->
+        factor as Int * term as Int
+    } or factor
+}
+
+/**
+ * A [factor] parser is a function taking a String as an input,
+ * and parsing content contained between parenthesis.
+ * Having a cycle with terms and expressions allow to maintain the correct
+ * order between operations.
+ */
+@Suppress("CAST_NEVER_SUCCEEDS", "ClassName") // Because we know our casts will actually succeed.
+object factor : CyclicParser<Int>() {
+    override val parser: Parser<Int> = (char('(') + expression + char(')')) map { (_, expression, _) ->
+        expression as Int
+    } or integer
+}

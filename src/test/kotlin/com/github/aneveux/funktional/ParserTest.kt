@@ -189,5 +189,95 @@ class ParserTest : StringSpec() {
             val results = integer("!1234")
             results.size shouldBeExactly 0
         }
+
+        "An expression should allow to compute simple additions" {
+            val results = expression("1+2")
+            results.size shouldBeExactly 1
+            results.first().let { (parsed, unparsed) ->
+                parsed shouldBeExactly 3
+                unparsed shouldBe ""
+            }
+        }
+
+        "An expression shouldn't take care of remaining parts it can't understand" {
+            val results = expression("1+2abcd")
+            results.size shouldBeExactly 1
+            results.first().let { (parsed, unparsed) ->
+                parsed shouldBeExactly 3
+                unparsed shouldBe "abcd"
+            }
+        }
+
+        "An expression should allow to compute a suite of multiple additions" {
+            val results = expression("1+2+3")
+            results.size shouldBeExactly 1
+            results.first().let { (parsed, unparsed) ->
+                parsed shouldBeExactly 6
+                unparsed shouldBe ""
+            }
+        }
+
+        "An expression should allow to compute simple multiplications" {
+            val results = expression("3*2")
+            results.size shouldBeExactly 1
+            results.first().let { (parsed, unparsed) ->
+                parsed shouldBeExactly 6
+                unparsed shouldBe ""
+            }
+        }
+
+        "An expression should allow to compute a suite of multiple multiplications" {
+            val results = expression("2*2*2")
+            results.size shouldBeExactly 1
+            results.first().let { (parsed, unparsed) ->
+                parsed shouldBeExactly 8
+                unparsed shouldBe ""
+            }
+        }
+
+        "An expression should allow factors between parenthesis" {
+            val results = expression("(1+1)")
+            results.size shouldBeExactly 1
+            results.first().let { (parsed, unparsed) ->
+                parsed shouldBeExactly 2
+                unparsed shouldBe ""
+            }
+        }
+
+        "An expression should allow factors between multiple parenthesis" {
+            val results = expression("((((1+1))+1))")
+            results.size shouldBeExactly 1
+            results.first().let { (parsed, unparsed) ->
+                parsed shouldBeExactly 3
+                unparsed shouldBe ""
+            }
+        }
+
+        "An expression should take care of the operations order" {
+            val results = expression("3+2*3")
+            results.size shouldBeExactly 1
+            results.first().let { (parsed, unparsed) ->
+                parsed shouldBeExactly 9 // and not 15...
+                unparsed shouldBe ""
+            }
+        }
+
+        "An expression should properly take care of parenthesis and operations order" {
+            val results = expression("(3+2)*3")
+            results.size shouldBeExactly 1
+            results.first().let { (parsed, unparsed) ->
+                parsed shouldBeExactly 15
+                unparsed shouldBe ""
+            }
+        }
+
+        "An expression should allow to match complex combinations of parenthesis and operations" {
+            val results = expression("(2+(3+2*4+(5*2)+2)*5)")
+            results.size shouldBeExactly 1
+            results.first().let { (parsed, unparsed) ->
+                parsed shouldBeExactly 117
+                unparsed shouldBe ""
+            }
+        }
     }
 }

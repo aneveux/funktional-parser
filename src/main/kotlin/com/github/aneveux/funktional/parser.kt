@@ -10,6 +10,14 @@ package com.github.aneveux.funktional
 
     The parser type declaration is made upon the professor's
     explanations of what a parser is and what it should return.
+
+    Here's one thing to remember what a parser is, shared by the
+    professor:
+
+    - A parser for things
+    - Is a function from strings
+    - To list of pairs
+    - Of things and strings
  */
 
 data class ParsingResult<T>(val parsed: T, val unparsed: String) {

@@ -100,5 +100,33 @@ class ParserTest : StringSpec() {
             results.first().unparsed shouldBe "123"
         }
 
+        "An or parser should return the result of the first provided parser if it produces a result" {
+            val results = or(digit, letter)("123abc")
+            results.size shouldBeExactly 1
+            results.first().parsed shouldBe 1
+            results.first().unparsed shouldBe "23abc"
+        }
+
+        "An or parser should return the result of the second provided parser if the first one fails and not the second" {
+            val results = or(digit, letter)("abc123")
+            results.size shouldBeExactly 1
+            results.first().parsed shouldBe 'a'
+            results.first().unparsed shouldBe "bc123"
+        }
+
+        "An or parser shouldn't return a result if both provided parsers are not producing results" {
+            val results = or(digit, letter)("!123abc")
+            results.size shouldBeExactly 0
+        }
+
+        "An or parser could be used in combination with some parser to match a provided input" {
+            val results = some(or(digit, letter))("123abc!")
+            results.size shouldBeExactly 1
+            results.first().let { (parsed, unparsed) ->
+                parsed shouldContainExactly listOf(1, 2, 3, 'a', 'b', 'c')
+                unparsed shouldBe "!"
+            }
+        }
+
     }
 }

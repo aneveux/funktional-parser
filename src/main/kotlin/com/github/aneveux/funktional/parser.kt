@@ -20,7 +20,7 @@ package com.github.aneveux.funktional
     - Of things and strings
  */
 
-data class ParsingResult<T>(val parsed: T, val unparsed: String) {
+data class ParsingResult<out T>(val parsed: T, val unparsed: String) {
     override fun toString() = "(parsed=$parsed, unparsed=$unparsed)"
 }
 
@@ -101,4 +101,25 @@ fun <T> some(parser: Parser<T>): Parser<List<T>> = { input ->
         }
 
     acc(listOf(), input)
+}
+
+/**
+ * An or parser is a function taking two other parsers as parameters, as well
+ * as a String to be parsed.
+ * The or parser really is like an or-gate. If the first provided parser matches,
+ * it'll return its result. Otherwise, if the second is a success, it'll return the
+ * second result.
+ * If none of the provided parsers are producing results, no results will be
+ * returned by the or parser.
+ *
+ * Please note that our [ParsingResult] object has been modified a little bit to
+ * allow a better way of working with types. Since it's possible to provide to the
+ * or parser two parsers matching with different types (like letter and digit for example),
+ * the result returned by the or parser should match with both types depending on which
+ * parser is matching. To fix that, we'll simply specify that the type of a [ParsingResult]
+ * is `out T` so the returned type of the or parser will be a type matching with both
+ * types provided by the parsers to be tested.
+ */
+fun <T> or(firstParser: Parser<T>, secondParser: Parser<T>): Parser<T> = { input ->
+    firstParser(input).takeIf { it.isNotEmpty() } ?: secondParser(input)
 }

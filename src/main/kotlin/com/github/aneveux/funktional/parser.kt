@@ -64,3 +64,18 @@ fun char(vararg characters: Char): Parser<Char> = { input ->
     else
         listOf()
 }
+
+/**
+ * A letter parser is a function receiving a String to be parsed.
+ * The function should return the result of the parsing:
+ * If the providing String starts with a letter, this letter should
+ * be parsed, and the remaining part of the String should be left unparsed.
+ * If the provided String doesn't start with a letter, the function shouldn't
+ * return a result cause the String cannot be parsed.
+ */
+val letter: Parser<Char> = { input ->
+    if (input.firstOrNull()?.isLetter() == true)
+        listOf(ParsingResult(input.first(), input.drop(1)))
+    else
+        listOf()
+}

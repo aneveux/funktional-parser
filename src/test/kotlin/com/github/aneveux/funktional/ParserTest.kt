@@ -58,5 +58,27 @@ class ParserTest : StringSpec() {
             results.size shouldBeExactly 0
         }
 
+        "A letter parser shouldn't parse an empty String" {
+            val results = letter("")
+            results.size shouldBeExactly 0
+        }
+
+        "A letter parser shouln't parse a String with no letters" {
+            val results = letter("123")
+            results.size shouldBeExactly 0
+        }
+
+        "A letter parser should parse a String starting with a letter" {
+            val results = letter("abc")
+            results.size shouldBeExactly 1
+            results.first().parsed shouldBe 'a'
+            results.first().unparsed shouldBe "bc"
+        }
+
+        "A letter parser shouldn't parse a String with a letter not in the first position" {
+            val results = letter("1abc")
+            results.size shouldBeExactly 0
+        }
+
     }
 }

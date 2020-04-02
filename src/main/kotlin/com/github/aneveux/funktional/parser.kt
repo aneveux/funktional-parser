@@ -81,10 +81,10 @@ val letter: Parser<Char> = { input ->
 }
 
 /**
- * A some parser is a function receiving another parser as well as a
- * String to be parsed.
- * The some parser will actually run the provided parser on the input
- * String as long as it matches, and provide the result of the n parsings
+ * A some parser is a function receiving another parser and creating another
+ * parser repeating the provided one till it matches.
+ * The some parser will actually create a new parser allowing to run the provided
+ * on till it matches, and provide the result of the n parsings
  * which have been done.
  * The some parser won't parse anything if the provided parser doesn't
  * produce any result at all.
@@ -104,8 +104,8 @@ fun <T> some(parser: Parser<T>): Parser<List<T>> = { input ->
 }
 
 /**
- * An or parser is a function taking two other parsers as parameters, as well
- * as a String to be parsed.
+ * An or parser is a function taking two other parsers as parameters, and creating a
+ * parser allowing to run either the first one or the second.
  * The or parser really is like an or-gate. If the first provided parser matches,
  * it'll return its result. Otherwise, if the second is a success, it'll return the
  * second result.

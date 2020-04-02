@@ -225,9 +225,8 @@ infix operator fun <T> Parser<List<T>>.plus(secondParser: Parser<T>): Parser<Lis
 val integer: Parser<Int> = char('+', '-') + natural map { (sign, number) ->
     when (sign as Char) {
         '-' -> -(number as Int)
-        // The else branch can only be the '+' character
-        // Because our parser can't match anything else
-        else -> (number as Int)
+        '+' -> (number as Int)
+        else -> TODO("the sign [$sign] isn't supported yet")
     }
 } or natural
 
@@ -275,10 +274,8 @@ object expression : CyclicParser<Int>() {
     override val parser: Parser<Int> = (term + char('+', '-') + expression) map { (term, operator, expression) ->
         when (operator) {
             '-' -> term as Int - expression as Int
-            // The else branch can only be the '+' operator
-            // because that's the only character our parser
-            // will let pass
-            else -> term as Int + expression as Int
+            '+' -> term as Int + expression as Int
+            else -> TODO("the operator [$operator] isn't supported yet")
         }
     } or term
 }
